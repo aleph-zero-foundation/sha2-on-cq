@@ -1,18 +1,22 @@
-use halo2_proofs::halo2curves::bn256::Bn256;
-use plotters::prelude::*;
-use halo2_proofs::halo2curves::pairing::MultiMillerLoop;
-use halo2_proofs::plonk::Circuit;
-use crate::simple_circuit::SimpleCircuit;
+#![feature(array_zip)]
 
+use halo2_proofs::{
+    halo2curves::{bn256::Bn256, pairing::MultiMillerLoop},
+    plonk::Circuit,
+};
+use plotters::prelude::*;
+
+use crate::{circuit::ShaCircuit, simple_circuit::SimpleCircuit, tables::ShortLimbs};
+
+mod circuit;
 mod simple_circuit;
 mod tables;
 
-fn draw_circuit<E: MultiMillerLoop, C: Circuit<E>>(c: &C, k: u32) {
-    let root = BitMapBackend::new("simple_circuit.png", (1024, 768)).into_drawing_area();
+fn draw_circuit<E: MultiMillerLoop, C: Circuit<E>>(c: &C, k: u32, filename: &str) {
+    let filename = format!("{filename}.png");
+    let root = BitMapBackend::new(&filename, (1024, 768)).into_drawing_area();
     root.fill(&WHITE).unwrap();
-    let root = root
-        .titled("Simple Circuit Layout", ("sans-serif", 60))
-        .unwrap();
+    let root = root.titled("Circuit Layout", ("sans-serif", 60)).unwrap();
 
     halo2_proofs::dev::CircuitLayout::default()
         .show_labels(true)
@@ -21,6 +25,14 @@ fn draw_circuit<E: MultiMillerLoop, C: Circuit<E>>(c: &C, k: u32) {
         .unwrap();
 }
 
+fn draw_circuits() {
+    draw_circuit(&SimpleCircuit::<Bn256>::default(), 4, "simple_circuit");
+    draw_circuit(
+        &ShaCircuit::<Bn256, ShortLimbs>::default(),
+        5,
+        "sha_circuit",
+    );
+}
 fn main() {
-    draw_circuit(&SimpleCircuit::<Bn256>::default(), 4);
+    draw_circuits();
 }

@@ -1,6 +1,8 @@
-use crate::tables::limbs::{Bits, Limbs};
+use halo2_proofs::halo2curves::FieldExt;
+pub use limbs::{Limbs, LongLimbs, ShortLimbs, TinyLimbs};
 
-type Table = Vec<(u64, u64, u64, u64)>;
+use crate::tables::limbs::Bits;
+pub type Table = Vec<(u64, u64, u64, u64)>;
 
 mod limbs {
     use std::ops::{BitAnd, BitOr, BitXor, Range, Shl, Shr};
@@ -60,6 +62,15 @@ mod limbs {
         }
     }
 
+    #[derive(Default)]
+    pub struct TinyLimbs;
+    impl Limbs for TinyLimbs {
+        type FullWord = u8;
+        const FIRST_LIMB_LEN: u8 = 4;
+        const SECOND_LIMB_LEN: u8 = 2;
+    }
+
+    #[derive(Default)]
     pub struct ShortLimbs;
     impl Limbs for ShortLimbs {
         type FullWord = u16;
@@ -67,6 +78,7 @@ mod limbs {
         const SECOND_LIMB_LEN: u8 = 5;
     }
 
+    #[derive(Default)]
     pub struct LongLimbs;
     impl Limbs for LongLimbs {
         type FullWord = u32;
@@ -153,21 +165,29 @@ pub fn create_decomposition_table<L: Limbs, const K: u8>() -> Table {
     table
 }
 
+pub fn decompose_table<F: FieldExt>(table: Table) -> (Vec<F>, Vec<F>, Vec<F>, Vec<F>) {
+    let mut xs = vec![];
+    let mut ys = vec![];
+    let mut zs = vec![];
+    let mut ws = vec![];
+    for (w, x, y, z) in table {
+        ws.push(F::from(w));
+        xs.push(F::from(x));
+        ys.push(F::from(y));
+        zs.push(F::from(z));
+    }
+    (ws, xs, ys, zs)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::tables::limbs::Limbs;
-    use crate::tables::{create_ch_table, create_decomposition_table, create_maj_table, create_rot0_table, create_rot1_table};
-
-    struct TestLimbs;
-    impl Limbs for TestLimbs {
-        type FullWord = u8;
-        const FIRST_LIMB_LEN: u8 = 4;
-        const SECOND_LIMB_LEN: u8 = 2;
-    }
-
+    use crate::tables::{
+        create_ch_table, create_decomposition_table, create_maj_table, create_rot0_table,
+        create_rot1_table, TinyLimbs,
+    };
     #[test]
     fn rot0_works() {
-        let table = create_rot0_table::<TestLimbs>();
+        let table = create_rot0_table::<TinyLimbs>();
         assert_eq!(table.len(), 256);
         assert!(table.contains(&(0, 0, 0, 0)));
         assert!(table.contains(&(0b0000_1100, 0b000000_01, 0b000000_00, 0b0000_0100)));
@@ -176,7 +196,7 @@ mod tests {
 
     #[test]
     fn rot1_works() {
-        let table = create_rot1_table::<TestLimbs>();
+        let table = create_rot1_table::<TinyLimbs>();
         assert_eq!(table.len(), 256);
         assert!(table.contains(&(0, 0, 0, 0)));
         assert!(table.contains(&(0b0000_1100, 0b000000_01, 0b000000_00, 0b1110_1001)));
@@ -185,7 +205,7 @@ mod tests {
 
     #[test]
     fn maj_works() {
-        let table = create_maj_table::<TestLimbs>();
+        let table = create_maj_table::<TinyLimbs>();
         assert_eq!(table.len(), 256);
         assert!(table.contains(&(0, 0, 0, 0)));
         assert!(table.contains(&(0b0000_1100, 0b000000_01, 0b000000_00, 0b0000_0000)));
@@ -194,7 +214,7 @@ mod tests {
 
     #[test]
     fn ch_works() {
-        let table = create_ch_table::<TestLimbs>();
+        let table = create_ch_table::<TinyLimbs>();
         assert_eq!(table.len(), 256);
         assert!(table.contains(&(0, 0, 0, 0)));
         assert!(table.contains(&(0b0000_1100, 0b000000_01, 0b000000_00, 0b0000_0000)));
@@ -202,8 +222,8 @@ mod tests {
     }
 
     #[test]
-    fn decomposition_works(){
-        let table = create_decomposition_table::<TestLimbs, 10>();
+    fn decomposition_works() {
+        let table = create_decomposition_table::<TinyLimbs, 10>();
         assert_eq!(table.len(), 1024);
         assert!(table.contains(&(0, 0, 0, 0)));
         assert!(table.contains(&(0b10_1010_1010, 0b0000_1010, 0b000000_10, 0b000000_10)));

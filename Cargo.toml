@@ -8,4 +8,4 @@ path = "src/main.rs"
 name = "sha-on-cq"
 
 [dependencies]
-tabled = { version = "0.15.0" }
+tabled = { version = "0.15.0", features = ["ansi"] }

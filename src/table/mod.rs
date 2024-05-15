@@ -9,6 +9,10 @@ use crate::table::advice_generation::compute_advice;
 mod constants;
 mod render;
 mod advice_generation;
+mod indices;
+
+
+pub const NUM_ROWS: usize = 257;
 
 #[derive(Clone, Default)]
 pub struct Selectors {

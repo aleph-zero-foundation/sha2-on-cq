@@ -3,8 +3,7 @@ use std::collections::HashSet;
 use tabled::builder::Builder;
 
 use crate::{table::Table, types::Index};
-
-const NUM_ROWS: usize = 64;
+use crate::table::NUM_ROWS;
 
 fn init_rows(builder: &mut Builder) {
     builder.push_record(["row index"]);

@@ -101,10 +101,25 @@ pub struct Table {
 
 impl Table {
     pub fn new(private_input: Option<[Word; 64]>, public_input: Option<[Word; 8]>) -> Self {
-        Self {
+        let slf = Self {
             fixed_part: FixedPart::new(),
             witness: private_input.map_or_else(Witness::empty, Witness::new),
             public_input: public_input.map_or_else(|| [0; 24], |words| decompose_many(&words)),
+        };
+
+        if public_input.is_some() && private_input.is_some() {
+            for i in 0..24 {
+                // assert_eq!(
+                //     slf.public_input[i],
+                //     slf.witness.advice[i].last().unwrap().limb()
+                // );
+                if slf.public_input[i] != slf.witness.advice[i].last().unwrap().limb() {
+                    eprintln!("MISMATCH");
+                    break;
+                }
+            }
         }
+
+        slf
     }
 }

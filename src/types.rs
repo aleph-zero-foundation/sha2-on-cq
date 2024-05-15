@@ -25,6 +25,10 @@ pub const fn compose(limbs: &[Limb; 3]) -> Word {
     (limbs[0] as Word) << 21 | (limbs[1] as Word) << 10 | limbs[2] as Word
 }
 
+pub fn right_rotation(word: Word, n: usize) -> Word {
+    (word >> n) | (word << (32 - n))
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum AdviceEntry {
     Word(Word),

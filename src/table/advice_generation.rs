@@ -68,19 +68,21 @@ fn compute_lookup_row(advice: &mut AdviceArea, input_limbs: &[Limb; 24], row: us
 }
 
 fn compute_rot0(x: Limb, y: Limb, z: Limb) -> Word {
-    (x + y + z) as Word
+    let word = compose(&[x, y, z]);
+    word.rotate_right(2) ^ word.rotate_right(13) ^ word.rotate_right(22)
 }
 
 fn compute_rot1(x: Limb, y: Limb, z: Limb) -> Word {
-    (x + y + z) as Word
+    let word = compose(&[x, y, z]);
+    word.rotate_right(6) ^ word.rotate_right(11) ^ word.rotate_right(25)
 }
 
 fn compute_maj(x: Limb, y: Limb, z: Limb) -> Limb {
-    x + y + z
+    (x & y) ^ (x & z) ^ (y & z)
 }
 
 fn compute_choose(x: Limb, y: Limb, z: Limb) -> Limb {
-    x + y + z
+    (x & y) ^ (!x & z)
 }
 
 fn compute_composition_row(advice: &mut AdviceArea, message_word: Word, row: usize, round: usize) {

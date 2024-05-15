@@ -1,8 +1,10 @@
 use std::collections::HashSet;
+use crate::table::constants::{initial_hash_limbs, ROUND_CONSTANTS};
 
 use crate::types::{AdviceEntry, Index, Limb, Word};
 
 mod render;
+mod constants;
 
 #[derive(Clone, Default)]
 pub struct Selectors {
@@ -22,8 +24,8 @@ pub struct FixedPart {
 impl FixedPart {
     fn new() -> Self {
         Self {
-            round_constants: [0; 64],
-            initial_hash_words: [0; 24],
+            round_constants: ROUND_CONSTANTS,
+            initial_hash_words: initial_hash_limbs(),
             selectors: Selectors::default(),
         }
     }

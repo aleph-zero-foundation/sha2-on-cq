@@ -1,25 +1,52 @@
 use std::collections::HashSet;
 
 use crate::{
-    table::constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    table::{
+        advice_generation::compute_advice,
+        constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    },
     types::{decompose_many, AdviceEntry, Index, Limb, Word},
 };
-use crate::table::advice_generation::compute_advice;
 
-mod constants;
-mod render;
 mod advice_generation;
+mod constants;
 mod indices;
-
+mod render;
 
 pub const NUM_ROWS: usize = 257;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Selectors {
     pub lookups: HashSet<Index>,
     pub composition: HashSet<Index>,
     pub addition: HashSet<Index>,
     pub decomposition: HashSet<Index>,
+}
+
+impl Selectors {
+    fn new() -> Self {
+        let mut lookups = HashSet::new();
+        let mut composition = HashSet::new();
+        let mut addition = HashSet::new();
+        let mut decomposition = HashSet::new();
+
+        for i in 0..NUM_ROWS {
+            match i % 4 {
+                0 => lookups.insert(i),
+                1 => composition.insert(i),
+                2 => addition.insert(i),
+                3 => decomposition.insert(i),
+                _ => unreachable!(),
+            };
+        }
+
+        Self {
+            lookups,
+            composition,
+            addition,
+            decomposition,
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -34,7 +61,7 @@ impl FixedPart {
         Self {
             round_constants: ROUND_CONSTANTS,
             initial_hash_words: decompose_many(&INITIAL_HASH_WORDS),
-            selectors: Selectors::default(),
+            selectors: Selectors::new(),
         }
     }
 }

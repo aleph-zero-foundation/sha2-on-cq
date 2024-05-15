@@ -1,10 +1,14 @@
 use std::collections::HashSet;
-use crate::table::constants::{initial_hash_limbs, ROUND_CONSTANTS};
 
-use crate::types::{AdviceEntry, Index, Limb, Word};
+use crate::{
+    table::constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    types::{decompose_many, AdviceEntry, Index, Limb, Word},
+};
+use crate::table::advice_generation::compute_advice;
 
-mod render;
 mod constants;
+mod render;
+mod advice_generation;
 
 #[derive(Clone, Default)]
 pub struct Selectors {
@@ -25,7 +29,7 @@ impl FixedPart {
     fn new() -> Self {
         Self {
             round_constants: ROUND_CONSTANTS,
-            initial_hash_words: initial_hash_limbs(),
+            initial_hash_words: decompose_many(&INITIAL_HASH_WORDS),
             selectors: Selectors::default(),
         }
     }
@@ -38,7 +42,7 @@ pub struct Witness {
 }
 
 impl Witness {
-    fn new() -> Self {
+    fn empty() -> Self {
         Self {
             message_schedule: [0; 64],
             advice: (0..24)
@@ -46,6 +50,13 @@ impl Witness {
                 .collect::<Vec<_>>()
                 .try_into()
                 .unwrap(),
+        }
+    }
+
+    fn new(private_input: [Word; 64]) -> Self {
+        Self {
+            message_schedule: private_input,
+            advice: compute_advice(private_input),
         }
     }
 }
@@ -58,11 +69,11 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn new() -> Self {
+    pub fn new(private_input: Option<[Word; 64]>, public_input: Option<[Word; 8]>) -> Self {
         Self {
             fixed_part: FixedPart::new(),
-            witness: Witness::new(),
-            public_input: [0; 24],
+            witness: private_input.map_or_else(Witness::empty, Witness::new),
+            public_input: public_input.map_or_else(|| [0; 24], |words| decompose_many(&words)),
         }
     }
 }

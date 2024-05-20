@@ -37,10 +37,11 @@ pub fn right_rotation(word: Word, n: usize) -> Word {
     (word >> n) | (word << (32 - n))
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum AdviceEntry {
     Word(Word),
     Limb(Limb),
+    #[default]
     Mpty,
 }
 

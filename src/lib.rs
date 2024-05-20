@@ -1,4 +1,4 @@
-pub mod constants;
+mod constants;
 pub mod table;
-pub mod trace;
+mod trace;
 pub mod types;

@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use tabled::builder::Builder;
 
 use crate::{table::Table, types::Index};
+use crate::table::advice::ADVICE_COLUMNS;
 use crate::table::NUM_ROWS;
 
 fn init_rows(builder: &mut Builder) {
@@ -57,12 +58,8 @@ impl Table {
         ));
     }
     fn render_witness(&self, builder: &mut Builder) {
-        builder.push_column(render_column(
-            "message schedule (witness)",
-            self.witness.message_schedule,
-        ));
-        for i in 0..self.witness.advice.len() {
-            builder.push_column(render_column("", &self.witness.advice[i]));
+        for i in 0..ADVICE_COLUMNS {
+            builder.push_column(render_column("", &self.witness[i]));
         }
     }
 }

@@ -81,3 +81,18 @@ impl Display for AdviceEntry {
         }
     }
 }
+
+#[derive(Default, Copy, Clone)]
+pub struct Worimb {
+    pub word: Word,
+    pub limbs: [Limb; 3],
+}
+
+impl From<Word> for Worimb {
+    fn from(word: Word) -> Self {
+        Self {
+            word,
+            limbs: decompose(&word),
+        }
+    }
+}

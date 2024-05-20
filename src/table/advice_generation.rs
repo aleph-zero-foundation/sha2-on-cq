@@ -1,10 +1,7 @@
 use crate::{
-    table::{
-        constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
-        indices::*,
-        NUM_ROWS, ROWS_PER_ROUND,
-    },
-    types::{compose, decompose, decompose_many, AdviceEntry, Limb, Word},
+    constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    table::{indices::*, NUM_ROWS, ROWS_PER_ROUND},
+    types::{AdviceEntry, compose, decompose, decompose_many, Limb, Word},
 };
 
 type AdviceArea = [Vec<AdviceEntry>; 24];

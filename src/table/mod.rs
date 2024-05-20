@@ -1,15 +1,14 @@
 use std::collections::HashSet;
 
 use crate::{
+    constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
     table::{
         advice_generation::compute_advice,
-        constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
     },
     types::{AdviceEntry, decompose_many, Index, Limb, Word},
 };
 
 mod advice_generation;
-mod constants;
 mod indices;
 mod render;
 

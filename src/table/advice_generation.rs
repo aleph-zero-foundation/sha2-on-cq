@@ -2,14 +2,12 @@ use crate::{
     table::{
         constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
         indices::*,
-        NUM_ROWS,
+        NUM_ROWS, ROWS_PER_ROUND,
     },
     types::{compose, decompose, decompose_many, AdviceEntry, Limb, Word},
 };
 
 type AdviceArea = [Vec<AdviceEntry>; 24];
-
-const ROWS_PER_ROUND: usize = 4;
 
 pub fn compute_advice(message_schedule: [Word; 64]) -> AdviceArea {
     let mut advice = vec![vec![AdviceEntry::Mpty; NUM_ROWS]; 24]
@@ -20,6 +18,7 @@ pub fn compute_advice(message_schedule: [Word; 64]) -> AdviceArea {
     for i in 0..64 {
         compute_round(&mut advice, message_schedule[i], i);
     }
+    compute_finalization(&mut advice);
 
     advice
 }
@@ -142,4 +141,21 @@ fn prepare_next_round(advice: &mut AdviceArea, input_limbs: &[Limb; 24], row: us
     advice[EX][row] = e_limbs[0].into();
     advice[EY][row] = e_limbs[1].into();
     advice[EZ][row] = e_limbs[2].into();
+}
+
+fn compute_finalization(advice: &mut AdviceArea) {
+    let base_row = NUM_ROWS - 3;
+    for (column, hash) in advice
+        .iter_mut()
+        .zip::<[_; 24]>(decompose_many(&INITIAL_HASH_WORDS))
+    {
+        column[base_row + 1] = hash.into();
+    }
+
+    for column in advice {
+        column[base_row + 2] = column[base_row + 1]
+            .limb()
+            .wrapping_add(column[base_row].limb())
+            .into();
+    }
 }

@@ -4,6 +4,14 @@ pub type Word = u32;
 pub type Limb = u16;
 pub type Index = usize;
 
+pub fn print_word_bits(word: Word) {
+    println!("{word:032b}");
+}
+
+pub fn print_limb_bits(limb: Limb) {
+    println!("{limb:016b}");
+}
+
 pub const fn decompose(word: &Word) -> [Limb; 3] {
     [
         ((*word >> 21) % (1 << 11)) as Limb,

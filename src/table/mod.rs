@@ -5,7 +5,7 @@ use crate::{
         advice_generation::compute_advice,
         constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
     },
-    types::{decompose_many, AdviceEntry, Index, Limb, Word},
+    types::{AdviceEntry, decompose_many, Index, Limb, Word},
 };
 
 mod advice_generation;
@@ -13,7 +13,8 @@ mod constants;
 mod indices;
 mod render;
 
-pub const NUM_ROWS: usize = 257;
+const ROWS_PER_ROUND: usize = 4;
+pub const NUM_ROWS: usize = 64 * ROWS_PER_ROUND + 3;
 
 #[derive(Clone)]
 pub struct Selectors {
@@ -21,6 +22,7 @@ pub struct Selectors {
     pub composition: HashSet<Index>,
     pub addition: HashSet<Index>,
     pub decomposition: HashSet<Index>,
+    pub finalization: HashSet<Index>,
 }
 
 impl Selectors {
@@ -30,7 +32,7 @@ impl Selectors {
         let mut addition = HashSet::new();
         let mut decomposition = HashSet::new();
 
-        for i in 0..NUM_ROWS {
+        for i in 0..(NUM_ROWS - 3) {
             match i % 4 {
                 0 => lookups.insert(i),
                 1 => composition.insert(i),
@@ -45,6 +47,7 @@ impl Selectors {
             composition,
             addition,
             decomposition,
+            finalization: HashSet::from([NUM_ROWS - 3]),
         }
     }
 }
@@ -109,14 +112,10 @@ impl Table {
 
         if public_input.is_some() && private_input.is_some() {
             for i in 0..24 {
-                // assert_eq!(
-                //     slf.public_input[i],
-                //     slf.witness.advice[i].last().unwrap().limb()
-                // );
-                if slf.public_input[i] != slf.witness.advice[i].last().unwrap().limb() {
-                    eprintln!("MISMATCH");
-                    break;
-                }
+                assert_eq!(
+                    slf.public_input[i],
+                    slf.witness.advice[i].last().unwrap().limb().into(),
+                );
             }
         }
 

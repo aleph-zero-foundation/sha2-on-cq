@@ -79,7 +79,8 @@ const SHA_OUTPUT: [Word; 8] = [
 ];
 
 fn main() {
-    let mut table = Table::new(Some(MESSAGE_SCHEDULE), Some(SHA_OUTPUT)).render();
+    let plonk_table = Table::new(Some(MESSAGE_SCHEDULE), Some(SHA_OUTPUT));
+    let mut table = plonk_table.render();
     table.with(Style::markdown());
     fs::write("table.md", table.to_string().as_bytes()).unwrap();
 }

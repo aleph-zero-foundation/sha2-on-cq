@@ -2,9 +2,10 @@ use std::collections::HashSet;
 
 use tabled::builder::Builder;
 
-use crate::{table::Table, types::Index};
-use crate::table::advice::ADVICE_COLUMNS;
-use crate::table::NUM_ROWS;
+use crate::{
+    table::{advice::ADVICE_COLUMNS, Table, NUM_ROWS},
+    types::Index,
+};
 
 fn init_rows(builder: &mut Builder) {
     builder.push_record(["row index"]);
@@ -29,16 +30,14 @@ impl Table {
     fn render_instance(&self, builder: &mut Builder) {
         builder.push_column(render_column("result (public input)", self.public_input));
     }
+
     fn render_fixed(&self, builder: &mut Builder) {
         builder.push_column(render_column(
             "round constants (fixed)",
             self.fixed_part.round_constants,
         ));
-        builder.push_column(render_column(
-            "initial hash words (fixed)",
-            self.fixed_part.initial_hash_words,
-        ));
     }
+
     fn render_selectors(&self, builder: &mut Builder) {
         builder.push_column(render_column(
             "lookup selector (fixed)",
@@ -57,9 +56,10 @@ impl Table {
             render_selector(&self.fixed_part.selectors.decomposition),
         ));
     }
+
     fn render_witness(&self, builder: &mut Builder) {
         for i in 0..ADVICE_COLUMNS {
-            builder.push_column(render_column("", &self.witness[i]));
+            builder.push_column(render_column("", &self.advice[i]));
         }
     }
 }

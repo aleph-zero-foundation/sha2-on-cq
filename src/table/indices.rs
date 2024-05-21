@@ -18,14 +18,14 @@ pub const CH_Z: usize = 7;
 
 // ==== COMPOSITION RESULTS ========================================================================
 
-pub const MAJ: usize = 1;
-pub const CH: usize = 5;
+pub const MAJ: usize = 0;
+pub const CH: usize = 1;
 pub const D: usize = 2;
 pub const H: usize = 3;
 
 // ==== ROUND CONSTANTS ============================================================================
-pub const W: usize = 8;
+pub const W: usize = 6;
 
 // ==== ADDITION RESULTS ===========================================================================
 pub const A: usize = 0;
-pub const E: usize = 4;
+pub const E: usize = 1;

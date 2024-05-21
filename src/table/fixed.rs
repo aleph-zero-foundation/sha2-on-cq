@@ -33,9 +33,6 @@ pub struct Selectors {
 impl Selectors {
     fn new() -> Self {
         // todo
-        let mut s = Self::default();
-        s.lookups.insert(0);
-        s.lookups.insert(2);
-        s
+        Self::default()
     }
 }

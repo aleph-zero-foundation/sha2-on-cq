@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use tabled::builder::Builder;
 
 use crate::{
-    table::{advice::ADVICE_COLUMNS, Table, NUM_ROWS},
+    table::{ADVICE_COLUMNS, NUM_ROWS, Table},
     types::Index,
 };
 

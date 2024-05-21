@@ -9,7 +9,9 @@ mod fixed;
 mod indices;
 mod render;
 
-pub const NUM_ROWS: usize = 259;
+pub const ROWS_PER_ROUND: usize = 4;
+pub const NUM_ROWS: usize = (16 + 64) * ROWS_PER_ROUND + 1;
+pub const ADVICE_COLUMNS: usize = 8;
 
 #[derive(Clone)]
 pub struct Table {
@@ -22,7 +24,7 @@ impl Table {
     pub fn new(private_input: [Word; 16], public_input: [Word; 8]) -> Self {
         Self {
             fixed_part: FixedPart::new(),
-            advice: Advice::new(&Trace::new(private_input)),
+            advice: Advice::from_trace(&Trace::new(private_input)),
             public_input,
         }
     }

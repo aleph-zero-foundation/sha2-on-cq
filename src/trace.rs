@@ -2,8 +2,8 @@ use std::ops::Index;
 
 use crate::{
     constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
-    types::{right_rotation, Bitem, Word, WordSum},
     ROUNDS,
+    types::{Bitem, right_rotation, Word, WordSum},
 };
 
 pub struct Trace {
@@ -84,9 +84,14 @@ impl Trace {
         let E = d.full + temp2;
 
         let outputs = [A.into(), a, b, c, E.into(), e, f, g];
+
+
         for (column, item) in self.round_outputs.iter_mut().zip(outputs.iter()) {
             column[round] = *item;
         }
+        [self.rotations[0][round], self.rotations[1][round]] = [rot0.into(), rot1.into()];
+        [self.majority[round], self.choose[round]] = [maj.into(), ch.into()];
+
         outputs
     }
 }

@@ -1,10 +1,10 @@
 use std::fs;
 
-use tabled::settings::Style;
-
-use sha_on_cq::{
-    table::Table,
-    types::Word,
+use sha_on_cq::{table::Table, types::Word};
+use tabled::settings::{
+    object::Columns,
+    style::{LineChar, Offset},
+    Modify, Style,
 };
 
 /// Message schedule for '' (empty string).
@@ -35,6 +35,10 @@ const SHA_OUTPUT: [Word; 8] = [
 fn main() {
     let plonk_table = Table::new(MESSAGE_SCHEDULE, SHA_OUTPUT);
     let mut table = plonk_table.render();
-    table.with(Style::markdown());
+    table.with(Style::markdown()).with(
+        Modify::new(Columns::new(..))
+            .with(LineChar::horizontal(':', Offset::Begin(0)))
+            .with(LineChar::horizontal(':', Offset::End(0))),
+    );
     fs::write("table.md", table.to_string().as_bytes()).unwrap();
 }

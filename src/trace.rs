@@ -2,38 +2,37 @@ use std::ops::Index;
 
 use crate::{
     constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
-    types::{right_rotation, Word, Worimb},
+    types::{right_rotation, Bitem, Word, WordSum},
+    ROUNDS,
 };
 
-pub const ROUNDS: usize = 64;
-
 pub struct Trace {
-    round_outputs: [[Worimb; ROUNDS]; 8],
+    round_outputs: [[Bitem; ROUNDS]; 8],
 
-    majority: [Worimb; ROUNDS],
-    choose: [Worimb; ROUNDS],
-    rotations: [[Worimb; ROUNDS]; 2],
+    majority: [Bitem; ROUNDS],
+    choose: [Bitem; ROUNDS],
+    rotations: [[Bitem; ROUNDS]; 2],
 
-    k: [Worimb; ROUNDS],
-    w: [Worimb; ROUNDS],
+    k: [Bitem; ROUNDS],
+    w: [Bitem; ROUNDS],
 }
 
 impl Trace {
     pub fn new(input: [Word; 16]) -> Self {
-        let w = Self::compute_message_schedule(input);
-        let (round_outputs, [majority, choose], rotations) = Self::do_rounds(w);
-
+        let nothing = [Bitem::default(); ROUNDS];
         Self {
-            round_outputs,
-            rotations,
-            majority,
-            choose,
-            k: ROUND_CONSTANTS.map(Worimb::from),
-            w: w.map(Worimb::from),
+            round_outputs: [nothing; 8],
+            majority: nothing,
+            choose: nothing,
+            rotations: [nothing; 2],
+            k: ROUND_CONSTANTS.map(Bitem::from),
+            w: nothing,
         }
+        .compute_message_schedule(input)
+        .do_rounds()
     }
 
-    fn compute_message_schedule(input: [Word; 16]) -> [Word; ROUNDS] {
+    fn compute_message_schedule(mut self, input: [Word; 16]) -> Self {
         let mut result = [Word::default(); ROUNDS];
         result[..16].copy_from_slice(&input);
 
@@ -52,40 +51,20 @@ impl Trace {
                 .wrapping_add(s1);
         }
 
-        result
+        self.w = result.map(Bitem::from);
+        self
     }
 
-    fn do_rounds(
-        w: [Word; ROUNDS],
-    ) -> (
-        [[Worimb; ROUNDS]; 8],
-        [[Worimb; ROUNDS]; 2],
-        [[Worimb; ROUNDS]; 2],
-    ) {
-        let mut words = [[Worimb::default(); ROUNDS]; 8];
-
-        let [mut maj, mut ch] = [[Worimb::default(); ROUNDS]; 2];
-        let mut rotations = [[Worimb::default(); ROUNDS]; 2];
-
-        let mut round_input = INITIAL_HASH_WORDS.map(Worimb::from);
+    fn do_rounds(mut self) -> Self {
+        let mut round_input = INITIAL_HASH_WORDS.map(Bitem::from);
         for round in 0..ROUNDS {
-            let (new_words, [new_maj, new_ch], [new_rot0, new_rot1]) =
-                Self::do_round(w[round], ROUND_CONSTANTS[round], round_input);
-
-            for (word, new_word) in words.iter_mut().zip(new_words.iter()) {
-                word[round] = *new_word;
-            }
-            (maj[round], ch[round]) = (new_maj, new_ch);
-            (rotations[0][round], rotations[1][round]) = (new_rot0, new_rot1);
-
-            round_input = new_words;
+            round_input = self.do_round(round, round_input);
         }
-
-        (words, [maj, ch], rotations)
+        self
     }
 
-    fn do_round(w: Word, k: Word, words: [Worimb; 8]) -> ([Worimb; 8], [Worimb; 2], [Worimb; 2]) {
-        let [a, b, c, d, e, f, g, h] = words;
+    fn do_round(&mut self, round: usize, round_input: [Bitem; 8]) -> [Bitem; 8] {
+        let [a, b, c, d, e, f, g, h] = round_input;
 
         let maj = (a.word & b.word) ^ (a.word & c.word) ^ (b.word & c.word);
         let ch = (e.word & f.word) ^ ((!e.word) & g.word);
@@ -95,32 +74,25 @@ impl Trace {
         let rot1 =
             right_rotation(e.word, 6) ^ right_rotation(e.word, 11) ^ right_rotation(e.word, 25);
 
-        let temp1 = h
-            .word
-            .wrapping_add(rot1)
-            .wrapping_add(ch)
-            .wrapping_add(k)
-            .wrapping_add(w);
-        let temp2 = rot0.wrapping_add(maj);
+        let k = ROUND_CONSTANTS[round] as WordSum;
+        let w = self.w[round].full;
 
-        (
-            [
-                temp1.wrapping_add(temp2).into(),
-                a,
-                b,
-                c,
-                d.word.wrapping_add(temp1).into(),
-                e,
-                f,
-                g,
-            ],
-            [maj.into(), ch.into()],
-            [rot0.into(), rot1.into()],
-        )
+        let temp1 = h.full + (rot1 as WordSum) + (ch as WordSum) + k + w;
+        let temp2 = (rot0 as WordSum) + (maj as WordSum);
+
+        let A = temp1 + temp2;
+        let E = d.full + temp2;
+
+        let outputs = [A.into(), a, b, c, E.into(), e, f, g];
+        for (column, item) in self.round_outputs.iter_mut().zip(outputs.iter()) {
+            column[round] = *item;
+        }
+        outputs
     }
 }
 
-#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[allow(unused)]
 pub enum TraceItem {
     a,
     b,
@@ -139,7 +111,7 @@ pub enum TraceItem {
 }
 
 impl Index<TraceItem> for Trace {
-    type Output = [Worimb; ROUNDS];
+    type Output = [Bitem; ROUNDS];
 
     fn index(&self, item: TraceItem) -> &Self::Output {
         match item {

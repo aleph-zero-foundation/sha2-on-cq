@@ -5,7 +5,7 @@ use TraceItem::*;
 use crate::{
     table::indices::*,
     trace::{Trace, TraceItem},
-    types::Worimb,
+    types::Bitem,
 };
 use crate::table::advice::advice_entry::AdviceEntry;
 
@@ -30,12 +30,6 @@ impl Index<usize> for Advice {
 }
 
 impl Advice {
-    pub fn empty() -> Self {
-        Self {
-            columns: [[AdviceEntry::Mpty; NUM_ROWS]; ADVICE_COLUMNS],
-        }
-    }
-
     pub fn new(trace: &Trace) -> Self {
         let mut columns = [[AdviceEntry::Mpty; NUM_ROWS]; ADVICE_COLUMNS];
 
@@ -76,7 +70,7 @@ impl Advice {
 
     fn fill_round_lookups(
         mut fill: impl FnMut(usize, AdviceEntry),
-        trace: impl Fn(TraceItem) -> Worimb,
+        trace: impl Fn(TraceItem) -> Bitem,
     ) {
         fill(ROT0, trace(rot0).word.into());
         fill(ROT1, trace(rot1).word.into());
@@ -94,7 +88,7 @@ impl Advice {
 
     fn fill_round_compositions(
         mut fill: impl FnMut(usize, AdviceEntry),
-        trace: impl Fn(TraceItem) -> Worimb,
+        trace: impl Fn(TraceItem) -> Bitem,
     ) {
         fill(MAJ, trace(maj).word.into());
         fill(CH, trace(ch).word.into());
@@ -104,7 +98,7 @@ impl Advice {
 
     fn fill_round_additions(
         mut fill: impl FnMut(usize, AdviceEntry),
-        trace: impl Fn(TraceItem) -> Worimb,
+        trace: impl Fn(TraceItem) -> Bitem,
     ) {
         // todo: trace should contain u37 and two new variants A and E
         fill(A, trace(a).word.into());
@@ -113,7 +107,7 @@ impl Advice {
 
     fn fill_round_decompositions(
         mut fill: impl FnMut(usize, AdviceEntry),
-        trace: impl Fn(TraceItem) -> Worimb,
+        trace: impl Fn(TraceItem) -> Bitem,
     ) {
         fill(AX, trace(a).limbs[0].into());
         fill(AY, trace(a).limbs[1].into());

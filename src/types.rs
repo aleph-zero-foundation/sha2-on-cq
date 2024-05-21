@@ -1,5 +1,4 @@
-use std::fmt::Display;
-
+pub use bitem::*;
 pub use composition::*;
 pub use ops::*;
 pub use printing::*;
@@ -58,17 +57,38 @@ mod ops {
     }
 }
 
-#[derive(Default, Copy, Clone)]
-pub struct Worimb {
-    pub word: Word,
-    pub limbs: [Limb; 3],
-}
+mod bitem {
+    use crate::types::{decompose, Limb, Word, WordSum};
 
-impl From<Word> for Worimb {
-    fn from(word: Word) -> Self {
-        Self {
-            word,
-            limbs: decompose(&word),
+    /// A 'bitem' represents a value that might occur during the computation of the hash function.
+    /// It fits within 64 bits and the full value is available at the field `full: WordSum`. Its
+    /// truncated version is represented by the field `word: Word`. The field `limbs` contains the
+    /// three 16-bit values that make up the `word` field.
+    #[derive(Copy, Clone, Default)]
+    pub struct Bitem {
+        pub full: WordSum,
+        pub word: Word,
+        pub limbs: [Limb; 3],
+    }
+
+    impl From<WordSum> for Bitem {
+        fn from(wordsum: WordSum) -> Self {
+            let truncated = wordsum as Word;
+            Self {
+                full: wordsum,
+                word: truncated,
+                limbs: decompose(&truncated),
+            }
+        }
+    }
+
+    impl From<Word> for Bitem {
+        fn from(word: Word) -> Self {
+            Self {
+                full: word as WordSum,
+                word,
+                limbs: decompose(&word),
+            }
         }
     }
 }

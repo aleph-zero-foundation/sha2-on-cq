@@ -5,8 +5,11 @@ use TraceItem::*;
 use crate::{
     table::indices::*,
     trace::{Trace, TraceItem},
-    types::{AdviceEntry, Worimb},
+    types::Worimb,
 };
+use crate::table::advice::advice_entry::AdviceEntry;
+
+mod advice_entry;
 
 pub const ADVICE_COLUMNS: usize = 9;
 pub const ROWS_PER_ROUND: usize = 4;

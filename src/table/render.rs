@@ -40,20 +40,28 @@ impl Table {
 
     fn render_selectors(&self, builder: &mut Builder) {
         builder.push_column(render_column(
-            "lookup selector (fixed)",
+            "lookup",
             render_selector(&self.fixed_part.selectors.lookups),
         ));
         builder.push_column(render_column(
-            "composition selector (fixed)",
+            "composition",
             render_selector(&self.fixed_part.selectors.composition),
         ));
         builder.push_column(render_column(
-            "addition selector (fixed)",
+            "addition",
             render_selector(&self.fixed_part.selectors.addition),
         ));
         builder.push_column(render_column(
-            "decomposition selector (fixed)",
+            "decomposition",
             render_selector(&self.fixed_part.selectors.decomposition),
+        ));
+        builder.push_column(render_column(
+            "witness computation",
+            render_selector(&self.fixed_part.selectors.witness_computation),
+        ));
+        builder.push_column(render_column(
+            "result verification",
+            render_selector(&self.fixed_part.selectors.result_verification),
         ));
     }
 
@@ -65,7 +73,7 @@ impl Table {
 }
 
 fn render_selector(selector: &HashSet<Index>) -> impl IntoIterator<Item = impl ToString> + '_ {
-    (0..NUM_ROWS).map(|i| selector.contains(&i).then(|| "1").unwrap_or(""))
+    (0..NUM_ROWS).map(|i| selector.contains(&i).then(|| "✅").unwrap_or(""))
 }
 
 fn render_column(

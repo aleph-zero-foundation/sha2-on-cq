@@ -55,6 +55,10 @@ mod ops {
     pub fn right_rotation(word: Word, n: usize) -> Word {
         (word >> n) | (word << (32 - n))
     }
+
+    pub fn right_shift(word: Word, n: usize) -> Word {
+        word >> n
+    }
 }
 
 mod bitem {
@@ -69,6 +73,15 @@ mod bitem {
         pub full: WordSum,
         pub word: Word,
         pub limbs: [Limb; 3],
+    }
+
+    impl Bitem {
+        pub fn truncate(self) -> Self {
+            Self {
+                full: self.word as WordSum,
+                ..self
+            }
+        }
     }
 
     impl From<WordSum> for Bitem {

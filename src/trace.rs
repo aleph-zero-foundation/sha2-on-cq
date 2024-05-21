@@ -2,8 +2,8 @@ use std::ops::Index;
 
 use crate::{
     constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    types::{right_rotation, right_shift, Bitem, Word, WordSum},
     ROUNDS,
-    types::{Bitem, right_rotation, Word, WordSum},
 };
 
 pub struct Trace {
@@ -37,13 +37,13 @@ impl Trace {
         result[..16].copy_from_slice(&input);
 
         for i in 16..ROUNDS {
-            let s0 = right_rotation(result[i - 15], 3)
-                ^ right_rotation(result[i - 15], 7)
-                ^ right_rotation(result[i - 15], 18);
+            let s0 = right_rotation(result[i - 15], 7)
+                ^ right_rotation(result[i - 15], 18)
+                ^ right_shift(result[i - 15], 3);
 
-            let s1 = right_rotation(result[i - 2], 10)
-                ^ right_rotation(result[i - 2], 17)
-                ^ right_rotation(result[i - 2], 19);
+            let s1 = right_rotation(result[i - 2], 17)
+                ^ right_rotation(result[i - 2], 19)
+                ^ right_shift(result[i - 2], 10);
 
             result[i] = result[i - 16]
                 .wrapping_add(s0)
@@ -75,16 +75,15 @@ impl Trace {
             right_rotation(e.word, 6) ^ right_rotation(e.word, 11) ^ right_rotation(e.word, 25);
 
         let k = ROUND_CONSTANTS[round] as WordSum;
-        let w = self.w[round].full;
+        let w = self.w[round].word as WordSum;
 
-        let temp1 = h.full + (rot1 as WordSum) + (ch as WordSum) + k + w;
+        let temp1 = (h.word as WordSum) + (rot1 as WordSum) + (ch as WordSum) + k + w;
         let temp2 = (rot0 as WordSum) + (maj as WordSum);
 
         let A = temp1 + temp2;
-        let E = d.full + temp2;
+        let E = (d.word as WordSum) + temp1;
 
         let outputs = [A.into(), a, b, c, E.into(), e, f, g];
-
 
         for (column, item) in self.round_outputs.iter_mut().zip(outputs.iter()) {
             column[round] = *item;

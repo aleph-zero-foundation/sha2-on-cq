@@ -2,11 +2,10 @@ use std::collections::HashSet;
 
 use crate::{
     constants::ROUND_CONSTANTS,
-    table::{NUM_ROWS, ROWS_PER_ROUND},
+    table::{INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     types::{Index, Word},
     ROUNDS,
 };
-use crate::table::INITIAL_BUFFER;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Selector {
@@ -67,6 +66,7 @@ impl Selectors {
     fn new() -> Self {
         Self {
             lookups: Self::lookup_rows(),
+            composition: Self::composition_rows(),
             ..Self::default()
         }
     }
@@ -74,6 +74,12 @@ impl Selectors {
     fn lookup_rows() -> HashSet<Index> {
         (0..ROUNDS)
             .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND)
+            .collect()
+    }
+
+    fn composition_rows() -> HashSet<Index> {
+        (0..ROUNDS)
+            .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND + 1)
             .collect()
     }
 }

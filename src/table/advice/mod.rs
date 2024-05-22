@@ -135,8 +135,8 @@ impl Advice {
             [
                 (MAJ, trace(maj).word.into()),
                 (CH, trace(ch).word.into()),
-                (D, trace(d).word.into()),
-                (H, trace(h).word.into()),
+                (D, trace(d_in).word.into()),
+                (H, trace(h_in).word.into()),
             ],
         )
     }

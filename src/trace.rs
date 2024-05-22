@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub struct Trace {
+    round_inputs: [[Bitem; ROUNDS]; 8],
     round_outputs: [[Bitem; ROUNDS]; 8],
 
     majority: [Bitem; ROUNDS],
@@ -22,6 +23,7 @@ impl Trace {
     pub fn new(input: [Word; 16]) -> Self {
         let nothing = [Bitem::default(); ROUNDS];
         Self {
+            round_inputs: [nothing; 8],
             round_outputs: [nothing; 8],
             majority: nothing,
             choose: nothing,
@@ -66,6 +68,9 @@ impl Trace {
 
     fn do_round(&mut self, round: usize, round_input: [Bitem; 8]) -> [Bitem; 8] {
         let [a, b, c, d, e, f, g, h] = round_input;
+        for (column, item) in self.round_inputs.iter_mut().zip(round_input.iter()) {
+            column[round] = *item;
+        }
 
         let maj = sha_ops::majority(a.word, b.word, c.word);
         let ch = sha_ops::choose(e.word, f.word, g.word);
@@ -101,10 +106,12 @@ pub enum TraceItem {
     b,
     c,
     d,
+    d_in,
     e,
     f,
     g,
     h,
+    h_in,
     maj,
     ch,
     rot0,
@@ -132,6 +139,8 @@ impl Index<TraceItem> for Trace {
             TraceItem::rot1 => &self.rotations[1],
             TraceItem::k => &self.k,
             TraceItem::w => &self.w,
+            TraceItem::d_in => &self.round_inputs[3],
+            TraceItem::h_in => &self.round_inputs[7],
         }
     }
 }

@@ -4,7 +4,7 @@ use crate::{
         advice::AdviceEntry,
         fixed::Selector::{Composition, Lookup},
         indices::*,
-        Table, ROWS_PER_ROUND,
+        Table, INITIAL_BUFFER, ROWS_PER_ROUND,
     },
     types::compose,
 };
@@ -19,7 +19,8 @@ macro_rules! helpers {
                     $table.advice[col3][$row - back_offset].limb(),
                 ]
             },
-            |col, item, exp: AdviceEntry| {
+            |col: usize, back_offset: usize| $table.advice[col][$row - back_offset].word(),
+            |col: usize, item: &str, exp: AdviceEntry| {
                 assert_eq!(
                     exp,
                     $table.advice[col][$row + 1],
@@ -42,7 +43,7 @@ impl Gate for LookupGate {
             return;
         }
 
-        let (get_limbs, check) = helpers!(table, row);
+        let (get_limbs, _, check) = helpers!(table, row);
 
         let [ax, ay, az] = get_limbs(AX, AY, AZ, 0);
         let [ex, ey, ez] = get_limbs(EX, EY, EZ, 0);
@@ -83,12 +84,12 @@ impl Gate for CompositionGate {
         if !table.fixed_part.is_enabled(Composition, row) {
             return;
         }
-        let (get_limbs, check) = helpers!(table, row);
+        let (get_limbs, _, check) = helpers!(table, row);
 
         let [maj_x, maj_y, maj_z] = get_limbs(MAJ_X, MAJ_Y, MAJ_Z, 0);
         let [ch_x, ch_y, ch_z] = get_limbs(CH_X, CH_Y, CH_Z, 0);
-        let [dx, dy, dz] = get_limbs(DX, DY, DZ, 3 * ROWS_PER_ROUND);
-        let [hx, hy, hz] = get_limbs(HX, HY, HZ, 3 * ROWS_PER_ROUND);
+        let [dx, dy, dz] = get_limbs(DX, DY, DZ, 3 * ROWS_PER_ROUND + 1);
+        let [hx, hy, hz] = get_limbs(HX, HY, HZ, 3 * ROWS_PER_ROUND + 1);
 
         check(MAJ, "maj", compose(&[maj_x, maj_y, maj_z]).into());
         check(CH, "ch", compose(&[ch_x, ch_y, ch_z]).into());

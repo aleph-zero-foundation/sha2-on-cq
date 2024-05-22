@@ -2,11 +2,11 @@ use crate::{
     sha_ops,
     table::{
         advice::AdviceEntry,
-        fixed::Selector::{Composition, Lookup},
+        fixed::Selector::{Addition, Composition, Lookup},
         indices::*,
         Table, INITIAL_BUFFER, ROWS_PER_ROUND,
     },
-    types::compose,
+    types::{compose, WordSum},
 };
 
 macro_rules! helpers {
@@ -20,6 +20,7 @@ macro_rules! helpers {
                 ]
             },
             |col: usize, back_offset: usize| $table.advice[col][$row - back_offset].word(),
+            |col: usize, back_offset: usize| $table.advice[col][$row - back_offset].word_sum(),
             |col: usize, item: &str, exp: AdviceEntry| {
                 assert_eq!(
                     exp,
@@ -43,7 +44,7 @@ impl Gate for LookupGate {
             return;
         }
 
-        let (get_limbs, _, check) = helpers!(table, row);
+        let (get_limbs, _, _, check) = helpers!(table, row);
 
         let [ax, ay, az] = get_limbs(AX, AY, AZ, 0);
         let [ex, ey, ez] = get_limbs(EX, EY, EZ, 0);
@@ -84,7 +85,7 @@ impl Gate for CompositionGate {
         if !table.fixed_part.is_enabled(Composition, row) {
             return;
         }
-        let (get_limbs, _, check) = helpers!(table, row);
+        let (get_limbs, _, _, check) = helpers!(table, row);
 
         let [maj_x, maj_y, maj_z] = get_limbs(MAJ_X, MAJ_Y, MAJ_Z, 0);
         let [ch_x, ch_y, ch_z] = get_limbs(CH_X, CH_Y, CH_Z, 0);
@@ -95,5 +96,34 @@ impl Gate for CompositionGate {
         check(CH, "ch", compose(&[ch_x, ch_y, ch_z]).into());
         check(D, "d", compose(&[dx, dy, dz]).into());
         check(H, "h", compose(&[hx, hy, hz]).into());
+    }
+}
+
+pub struct AdditionGate;
+impl Gate for AdditionGate {
+    fn check(table: &Table, row: usize) {
+        if !table.fixed_part.is_enabled(Addition, row) {
+            return;
+        }
+        let (_, get_word, _, check) = helpers!(table, row);
+
+        let [maj, ch] = [get_word(MAJ, 0) as WordSum, get_word(CH, 0) as WordSum];
+        let [d, h] = [get_word(D, 0) as WordSum, get_word(H, 0) as WordSum];
+        let [rot0, rot1] = [get_word(ROT0, 1) as WordSum, get_word(ROT1, 1) as WordSum];
+        let k = table.fixed_part.round_constants[row] as WordSum;
+        let w = get_word(W, 2) as WordSum;
+
+        let temp1 = h
+            .wrapping_add(rot1)
+            .wrapping_add(ch)
+            .wrapping_add(k)
+            .wrapping_add(w);
+        let temp2 = rot0.wrapping_add(maj);
+
+        let exp_a = temp1.wrapping_add(temp2);
+        let exp_e = temp1.wrapping_add(d);
+
+        check(A, "A", exp_a.into());
+        check(E, "E", exp_e.into());
     }
 }

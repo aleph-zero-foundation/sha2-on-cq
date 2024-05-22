@@ -64,22 +64,17 @@ pub struct Selectors {
 
 impl Selectors {
     fn new() -> Self {
+        let per_round = |in_round_offset| {
+            (0..ROUNDS)
+                .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND + in_round_offset)
+                .collect()
+        };
+
         Self {
-            lookups: Self::lookup_rows(),
-            composition: Self::composition_rows(),
+            lookups: per_round(0),
+            composition: per_round(1),
+            addition: per_round(2),
             ..Self::default()
         }
-    }
-
-    fn lookup_rows() -> HashSet<Index> {
-        (0..ROUNDS)
-            .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND)
-            .collect()
-    }
-
-    fn composition_rows() -> HashSet<Index> {
-        (0..ROUNDS)
-            .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND + 1)
-            .collect()
     }
 }

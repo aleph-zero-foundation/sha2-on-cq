@@ -52,6 +52,7 @@ impl Table {
         for row in 0..NUM_ROWS {
             gates::LookupGate::check(self, row);
             gates::CompositionGate::check(self, row);
+            gates::AdditionGate::check(self, row);
         }
     }
 }

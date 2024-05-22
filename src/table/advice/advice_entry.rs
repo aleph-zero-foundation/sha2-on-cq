@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::types::{Limb, Word, WordSum};
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub enum AdviceEntry {
     #[default]
     Mpty,

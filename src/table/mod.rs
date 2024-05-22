@@ -1,11 +1,12 @@
 use crate::{
-    table::{advice::Advice, fixed::FixedPart},
+    table::{advice::Advice, fixed::FixedPart, gates::Gate},
     trace::Trace,
     types::Word,
 };
 
 mod advice;
 mod fixed;
+mod gates;
 mod indices;
 mod render;
 
@@ -43,5 +44,11 @@ impl Table {
         col[OFFSET + 3 * ROWS_PER_ROUND + 1] = input[4];
 
         col
+    }
+
+    pub fn validate(&self) {
+        for row in 0..NUM_ROWS {
+            gates::LookupGate::check(self, row);
+        }
     }
 }

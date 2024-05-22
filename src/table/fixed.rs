@@ -1,7 +1,21 @@
 use std::collections::HashSet;
 
-use crate::{constants::ROUND_CONSTANTS, ROUNDS, types::{Index, Word}};
-use crate::table::{NUM_ROWS, ROWS_PER_ROUND};
+use crate::{
+    constants::ROUND_CONSTANTS,
+    table::{NUM_ROWS, ROWS_PER_ROUND},
+    types::{Index, Word},
+    ROUNDS,
+};
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Selector {
+    Lookup,
+    Composition,
+    Addition,
+    Decomposition,
+    WitnessComputation,
+    ResultVerification,
+}
 
 #[derive(Clone)]
 pub struct FixedPart {
@@ -25,6 +39,17 @@ impl FixedPart {
         }
         col
     }
+
+    pub fn is_enabled(&self, selector: Selector, row: Index) -> bool {
+        match selector {
+            Selector::Lookup => self.selectors.lookups.contains(&row),
+            Selector::Composition => self.selectors.composition.contains(&row),
+            Selector::Addition => self.selectors.addition.contains(&row),
+            Selector::Decomposition => self.selectors.decomposition.contains(&row),
+            Selector::WitnessComputation => self.selectors.witness_computation.contains(&row),
+            Selector::ResultVerification => self.selectors.result_verification.contains(&row),
+        }
+    }
 }
 
 #[derive(Clone, Default)]
@@ -39,7 +64,15 @@ pub struct Selectors {
 
 impl Selectors {
     fn new() -> Self {
-        // todo
-        Self::default()
+        Self {
+            lookups: Self::lookup_rows(),
+            ..Self::default()
+        }
+    }
+
+    fn lookup_rows() -> HashSet<Index> {
+        (0..ROUNDS)
+            .map(|r| 16 * ROWS_PER_ROUND + r * ROWS_PER_ROUND)
+            .collect()
     }
 }

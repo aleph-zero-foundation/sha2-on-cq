@@ -2,6 +2,7 @@ use std::ops::Index;
 
 use crate::{
     constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    sha_ops,
     types::{right_rotation, right_shift, Bitem, Word, WordSum},
     ROUNDS,
 };
@@ -66,13 +67,11 @@ impl Trace {
     fn do_round(&mut self, round: usize, round_input: [Bitem; 8]) -> [Bitem; 8] {
         let [a, b, c, d, e, f, g, h] = round_input;
 
-        let maj = (a.word & b.word) ^ (a.word & c.word) ^ (b.word & c.word);
-        let ch = (e.word & f.word) ^ ((!e.word) & g.word);
+        let maj = sha_ops::majority(a.word, b.word, c.word);
+        let ch = sha_ops::choose(e.word, f.word, g.word);
 
-        let rot0 =
-            right_rotation(a.word, 2) ^ right_rotation(a.word, 13) ^ right_rotation(a.word, 22);
-        let rot1 =
-            right_rotation(e.word, 6) ^ right_rotation(e.word, 11) ^ right_rotation(e.word, 25);
+        let rot0 = sha_ops::rot0(a.limbs);
+        let rot1 = sha_ops::rot1(e.limbs);
 
         let k = ROUND_CONSTANTS[round] as WordSum;
         let w = self.w[round].word as WordSum;

@@ -1,12 +1,11 @@
 use std::ops::{Index, IndexMut};
 
+pub use advice_entry::AdviceEntry;
 use TraceItem::*;
 
 use crate::{
     constants::INITIAL_HASH_WORDS,
-    table::{
-        advice::advice_entry::AdviceEntry, indices::*, ADVICE_COLUMNS, NUM_ROWS, ROWS_PER_ROUND,
-    },
+    table::{indices::*, ADVICE_COLUMNS, NUM_ROWS, ROWS_PER_ROUND},
     trace::{Trace, TraceItem},
     types::{decompose, Bitem},
 };

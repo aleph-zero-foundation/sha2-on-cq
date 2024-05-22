@@ -6,6 +6,7 @@ use crate::{
     types::{Index, Word},
     ROUNDS,
 };
+use crate::table::INITIAL_BUFFER;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Selector {
@@ -33,7 +34,7 @@ impl FixedPart {
 
     fn spread_round_constants() -> [Word; NUM_ROWS] {
         let mut col = [0; NUM_ROWS];
-        const OFFSET: usize = 16 * ROWS_PER_ROUND;
+        const OFFSET: usize = INITIAL_BUFFER * ROWS_PER_ROUND;
         for i in 0..ROUNDS {
             col[OFFSET + i * ROWS_PER_ROUND + 2] = ROUND_CONSTANTS[i];
         }
@@ -72,7 +73,7 @@ impl Selectors {
 
     fn lookup_rows() -> HashSet<Index> {
         (0..ROUNDS)
-            .map(|r| 16 * ROWS_PER_ROUND + r * ROWS_PER_ROUND)
+            .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND)
             .collect()
     }
 }

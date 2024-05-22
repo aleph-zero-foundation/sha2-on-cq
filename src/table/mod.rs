@@ -1,8 +1,4 @@
-use crate::{
-    table::{advice::Advice, fixed::FixedPart, gates::Gate},
-    trace::Trace,
-    types::Word,
-};
+use crate::{ROUNDS, table::{advice::Advice, fixed::FixedPart, gates::Gate}, trace::Trace, types::Word};
 
 mod advice;
 mod fixed;
@@ -10,8 +6,9 @@ mod gates;
 mod indices;
 mod render;
 
+pub const INITIAL_BUFFER: usize = 3;
 pub const ROWS_PER_ROUND: usize = 4;
-pub const NUM_ROWS: usize = (16 + 64) * ROWS_PER_ROUND + 2;
+pub const NUM_ROWS: usize = (INITIAL_BUFFER + ROUNDS) * ROWS_PER_ROUND + 2;
 pub const ADVICE_COLUMNS: usize = 8;
 
 #[derive(Clone)]
@@ -31,7 +28,7 @@ impl Table {
     }
 
     fn spread_public_input(input: [Word; 8]) -> [Word; NUM_ROWS] {
-        const OFFSET: usize = (16 + 64 - 3) * ROWS_PER_ROUND;
+        const OFFSET: usize = (INITIAL_BUFFER + ROUNDS - 3) * ROWS_PER_ROUND;
         let mut col = [0; NUM_ROWS];
 
         col[OFFSET + 0 * ROWS_PER_ROUND] = input[3];

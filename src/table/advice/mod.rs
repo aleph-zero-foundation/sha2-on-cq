@@ -5,9 +5,10 @@ use TraceItem::*;
 
 use crate::{
     constants::INITIAL_HASH_WORDS,
-    table::{indices::*, ADVICE_COLUMNS, NUM_ROWS, ROWS_PER_ROUND},
+    table::{indices::*, ADVICE_COLUMNS, INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     trace::{Trace, TraceItem},
     types::{decompose, Bitem},
+    ROUNDS,
 };
 
 mod advice_entry;
@@ -43,31 +44,40 @@ impl Advice {
     }
 
     fn fill_auxiliary_rows(mut self, trace: &Trace) -> Self {
-        for round in 0..16 {
-            let row = (round) * ROWS_PER_ROUND; // penultimate row of each round
-            self[W][row] = trace[w][round].word.into();
+        [
+            self[BX][2 * ROWS_PER_ROUND],
+            self[BY][2 * ROWS_PER_ROUND],
+            self[BZ][2 * ROWS_PER_ROUND],
+        ] = decompose(&INITIAL_HASH_WORDS[1]).map(Into::into);
+        [
+            self[FX][2 * ROWS_PER_ROUND],
+            self[FY][2 * ROWS_PER_ROUND],
+            self[FZ][2 * ROWS_PER_ROUND],
+        ] = decompose(&INITIAL_HASH_WORDS[5]).map(Into::into);
 
-            if round == 0 {
-                [self[AX][row], self[AY][row], self[AZ][row]] =
-                    decompose(&INITIAL_HASH_WORDS[0]).map(Into::into);
-                [self[EX][row], self[EY][row], self[EZ][row]] =
-                    decompose(&INITIAL_HASH_WORDS[4]).map(Into::into);
-            } else {
-                [self[AX][row], self[AY][row], self[AZ][row]] =
-                    trace[a][round - 1].limbs.map(Into::into);
-                [self[EX][row], self[EY][row], self[EZ][row]] =
-                    trace[e][round - 1].limbs.map(Into::into);
-            }
-        }
+        [
+            self[CX][1 * ROWS_PER_ROUND],
+            self[CY][1 * ROWS_PER_ROUND],
+            self[CZ][1 * ROWS_PER_ROUND],
+        ] = decompose(&INITIAL_HASH_WORDS[2]).map(Into::into);
+        [
+            self[GX][1 * ROWS_PER_ROUND],
+            self[GY][1 * ROWS_PER_ROUND],
+            self[GZ][1 * ROWS_PER_ROUND],
+        ] = decompose(&INITIAL_HASH_WORDS[6]).map(Into::into);
+
+        [self[DX][0], self[DY][0], self[DZ][0]] = decompose(&INITIAL_HASH_WORDS[3]).map(Into::into);
+        [self[HX][0], self[HY][0], self[HZ][0]] = decompose(&INITIAL_HASH_WORDS[7]).map(Into::into);
+
         self
     }
 
     fn fill_round_rows(mut self, trace: &Trace) -> Self {
-        const OFFSET: usize = 16 * ROWS_PER_ROUND;
+        const OFFSET: usize = INITIAL_BUFFER * ROWS_PER_ROUND;
 
         self.fill_first_round_input(OFFSET);
 
-        for round in 0..64 {
+        for round in 0..ROUNDS {
             let row = OFFSET + round * ROWS_PER_ROUND;
             let trace_access = |col| trace[col][round];
 

@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 
 use crate::{
-    constants::ROUND_CONSTANTS,
+    constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    ROUNDS,
     table::{INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     types::{Index, Word},
-    ROUNDS,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -17,26 +17,37 @@ pub enum Selector {
     ResultVerification,
 }
 
-#[derive(Clone)]
 pub struct FixedPart {
-    pub round_constants: [Word; NUM_ROWS],
+    pub constants: [Word; NUM_ROWS],
     pub selectors: Selectors,
 }
 
 impl FixedPart {
     pub fn new() -> Self {
         Self {
-            round_constants: Self::spread_round_constants(),
+            constants: Self::setup_constants(),
             selectors: Selectors::new(),
         }
     }
 
-    fn spread_round_constants() -> [Word; NUM_ROWS] {
+    fn setup_constants() -> [Word; NUM_ROWS] {
         let mut col = [0; NUM_ROWS];
-        const OFFSET: usize = INITIAL_BUFFER * ROWS_PER_ROUND;
+
+        let offset = INITIAL_BUFFER * ROWS_PER_ROUND;
         for i in 0..ROUNDS {
-            col[OFFSET + i * ROWS_PER_ROUND + 2] = ROUND_CONSTANTS[i];
+            col[offset + i * ROWS_PER_ROUND + 2] = ROUND_CONSTANTS[i];
         }
+
+        let offset = (INITIAL_BUFFER + ROUNDS - 3) * ROWS_PER_ROUND;
+        col[offset + 0 * ROWS_PER_ROUND] = INITIAL_HASH_WORDS[3];
+        col[offset + 0 * ROWS_PER_ROUND + 1] = INITIAL_HASH_WORDS[7];
+        col[offset + 1 * ROWS_PER_ROUND] = INITIAL_HASH_WORDS[2];
+        col[offset + 1 * ROWS_PER_ROUND + 1] = INITIAL_HASH_WORDS[6];
+        col[offset + 2 * ROWS_PER_ROUND] = INITIAL_HASH_WORDS[1];
+        col[offset + 2 * ROWS_PER_ROUND + 1] = INITIAL_HASH_WORDS[5];
+        col[offset + 3 * ROWS_PER_ROUND] = INITIAL_HASH_WORDS[0];
+        col[offset + 3 * ROWS_PER_ROUND + 1] = INITIAL_HASH_WORDS[4];
+
         col
     }
 
@@ -52,7 +63,6 @@ impl FixedPart {
     }
 }
 
-#[derive(Clone, Default)]
 pub struct Selectors {
     pub lookups: HashSet<Index>,
     pub composition: HashSet<Index>,
@@ -64,17 +74,22 @@ pub struct Selectors {
 
 impl Selectors {
     fn new() -> Self {
-        let per_round = |in_round_offset| {
-            (0..ROUNDS)
+        let per_round = |in_round_offset, from| {
+            (from..ROUNDS)
                 .map(|r| INITIAL_BUFFER * ROWS_PER_ROUND + r * ROWS_PER_ROUND + in_round_offset)
                 .collect()
         };
 
+        let mut result_verification: HashSet<_> = per_round(0, 61);
+        result_verification.insert((INITIAL_BUFFER + ROUNDS) * ROWS_PER_ROUND);
+
         Self {
-            lookups: per_round(0),
-            composition: per_round(1),
-            addition: per_round(2),
-            ..Self::default()
+            lookups: per_round(0, 0),
+            composition: per_round(1, 0),
+            addition: per_round(2, 0),
+            decomposition: per_round(3, 0),
+            witness_computation: per_round(0, 16),
+            result_verification,
         }
     }
 }

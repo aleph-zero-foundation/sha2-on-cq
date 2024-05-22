@@ -1,5 +1,12 @@
 use crate::{
-    table::{advice::Advice, fixed::FixedPart, gates::Gate},
+    table::{
+        advice::Advice,
+        fixed::FixedPart,
+        gates::{
+            AdditionGate, CompositionGate, DecompositionGate, Gate, LookupGate,
+            ResultVerificationGate, WitnessComputationGate,
+        },
+    },
     trace::Trace,
     types::Word,
     ROUNDS,
@@ -16,7 +23,6 @@ pub const ROWS_PER_ROUND: usize = 4;
 pub const NUM_ROWS: usize = (INITIAL_BUFFER + ROUNDS) * ROWS_PER_ROUND + 2;
 pub const ADVICE_COLUMNS: usize = 8;
 
-#[derive(Clone)]
 pub struct Table {
     fixed_part: FixedPart,
     advice: Advice,
@@ -50,9 +56,12 @@ impl Table {
 
     pub fn validate(&self) {
         for row in 0..NUM_ROWS {
-            gates::LookupGate::check(self, row);
-            gates::CompositionGate::check(self, row);
-            gates::AdditionGate::check(self, row);
+            LookupGate::check(self, row);
+            CompositionGate::check(self, row);
+            AdditionGate::check(self, row);
+            DecompositionGate::check(self, row);
+            WitnessComputationGate::check(self, row);
+            ResultVerificationGate::check(self, row);
         }
     }
 }

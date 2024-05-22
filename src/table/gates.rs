@@ -2,11 +2,13 @@ use crate::{
     sha_ops,
     table::{
         advice::AdviceEntry,
-        fixed::Selector::{Addition, Composition, Lookup},
+        fixed::Selector::{
+            Addition, Composition, Decomposition, Lookup, ResultVerification, WitnessComputation,
+        },
         indices::*,
-        Table, INITIAL_BUFFER, ROWS_PER_ROUND,
+        Table, ROWS_PER_ROUND,
     },
-    types::{compose, WordSum},
+    types::{compose, decompose, right_rotation, right_shift, Word, WordSum},
 };
 
 macro_rules! helpers {
@@ -110,7 +112,7 @@ impl Gate for AdditionGate {
         let [maj, ch] = [get_word(MAJ, 0) as WordSum, get_word(CH, 0) as WordSum];
         let [d, h] = [get_word(D, 0) as WordSum, get_word(H, 0) as WordSum];
         let [rot0, rot1] = [get_word(ROT0, 1) as WordSum, get_word(ROT1, 1) as WordSum];
-        let k = table.fixed_part.round_constants[row] as WordSum;
+        let k = table.fixed_part.constants[row] as WordSum;
         let w = get_word(W, 2) as WordSum;
 
         let temp1 = h
@@ -125,5 +127,70 @@ impl Gate for AdditionGate {
 
         check(A, "A", exp_a.into());
         check(E, "E", exp_e.into());
+    }
+}
+
+pub struct DecompositionGate;
+impl Gate for DecompositionGate {
+    fn check(table: &Table, row: usize) {
+        if !table.fixed_part.is_enabled(Decomposition, row) {
+            return;
+        }
+        let (_, _, get_word_sum, check) = helpers!(table, row);
+
+        let [a, e] = [get_word_sum(A, 0), get_word_sum(E, 0)];
+        let exp_a_limbs = decompose(&(a as Word));
+        let exp_e_limbs = decompose(&(e as Word));
+
+        check(AX, "ax", exp_a_limbs[0].into());
+        check(AY, "ay", exp_a_limbs[1].into());
+        check(AZ, "az", exp_a_limbs[2].into());
+        check(EX, "ex", exp_e_limbs[0].into());
+        check(EY, "ey", exp_e_limbs[1].into());
+        check(EZ, "ez", exp_e_limbs[2].into());
+    }
+}
+
+pub struct WitnessComputationGate;
+impl Gate for WitnessComputationGate {
+    fn check(table: &Table, row: usize) {
+        if !table.fixed_part.is_enabled(WitnessComputation, row) {
+            return;
+        }
+        let (_, get_word, _, _) = helpers!(table, row);
+
+        let [w_result, w1, w2, w3, w4] = [
+            get_word(W, 0),
+            get_word(W, 2 * ROWS_PER_ROUND),
+            get_word(W, 7 * ROWS_PER_ROUND),
+            get_word(W, 15 * ROWS_PER_ROUND),
+            get_word(W, 16 * ROWS_PER_ROUND),
+        ];
+
+        let s0 = right_rotation(w3, 7) ^ right_rotation(w3, 18) ^ right_shift(w3, 3);
+        let s1 = right_rotation(w1, 17) ^ right_rotation(w1, 19) ^ right_shift(w1, 10);
+        let exp = w2.wrapping_add(s0).wrapping_add(w4).wrapping_add(s1);
+
+        assert_eq!(exp, w_result, "w_i mismatch at row {row}");
+    }
+}
+
+pub struct ResultVerificationGate;
+impl Gate for ResultVerificationGate {
+    fn check(table: &Table, row: usize) {
+        if !table.fixed_part.is_enabled(ResultVerification, row) {
+            return;
+        }
+        let (get_limbs, _, _, _) = helpers!(table, row);
+
+        let [out_low, out_high] = [table.public_input[row], table.public_input[row + 1]];
+
+        let exp_low =
+            compose(&get_limbs(AX, AY, AZ, 0)).wrapping_add(table.fixed_part.constants[row]);
+        let exp_high =
+            compose(&get_limbs(EX, EY, EZ, 0)).wrapping_add(table.fixed_part.constants[row + 1]);
+
+        assert_eq!(exp_low, out_low, "output mismatch at row {row}");
+        assert_eq!(exp_high, out_high, "output mismatch at row {row}");
     }
 }

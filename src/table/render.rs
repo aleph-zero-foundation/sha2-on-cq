@@ -34,7 +34,7 @@ impl Table {
     fn render_fixed(&self, builder: &mut Builder) {
         builder.push_column(render_column_no_zeros(
             "round constants (fixed)",
-            self.fixed_part.round_constants,
+            self.fixed_part.constants,
         ));
     }
 

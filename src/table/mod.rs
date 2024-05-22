@@ -1,4 +1,9 @@
-use crate::{ROUNDS, table::{advice::Advice, fixed::FixedPart, gates::Gate}, trace::Trace, types::Word};
+use crate::{
+    table::{advice::Advice, fixed::FixedPart, gates::Gate},
+    trace::Trace,
+    types::Word,
+    ROUNDS,
+};
 
 mod advice;
 mod fixed;
@@ -46,6 +51,7 @@ impl Table {
     pub fn validate(&self) {
         for row in 0..NUM_ROWS {
             gates::LookupGate::check(self, row);
+            gates::CompositionGate::check(self, row);
         }
     }
 }

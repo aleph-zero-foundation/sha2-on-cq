@@ -1,7 +1,35 @@
 use crate::{
     sha_ops,
-    table::{advice::AdviceEntry, fixed::Selector::Lookup, indices::*, Table, ROWS_PER_ROUND},
+    table::{
+        advice::AdviceEntry,
+        fixed::Selector::{Composition, Lookup},
+        indices::*,
+        Table, ROWS_PER_ROUND,
+    },
+    types::compose,
 };
+
+macro_rules! helpers {
+    ($table:ident, $row:ident) => {
+        (
+            |col1: usize, col2: usize, col3: usize, back_offset: usize| {
+                [
+                    $table.advice[col1][$row - back_offset].limb(),
+                    $table.advice[col2][$row - back_offset].limb(),
+                    $table.advice[col3][$row - back_offset].limb(),
+                ]
+            },
+            |col, item, exp: AdviceEntry| {
+                assert_eq!(
+                    exp,
+                    $table.advice[col][$row + 1],
+                    "{item} mismatch at row {}",
+                    $row
+                );
+            },
+        )
+    };
+}
 
 pub trait Gate {
     fn check(table: &Table, row: usize);
@@ -14,13 +42,7 @@ impl Gate for LookupGate {
             return;
         }
 
-        let get_limbs = |col1: usize, col2: usize, col3: usize, back_offset: usize| {
-            [
-                table.advice[col1][row - back_offset].limb(),
-                table.advice[col2][row - back_offset].limb(),
-                table.advice[col3][row - back_offset].limb(),
-            ]
-        };
+        let (get_limbs, check) = helpers!(table, row);
 
         let [ax, ay, az] = get_limbs(AX, AY, AZ, 0);
         let [ex, ey, ez] = get_limbs(EX, EY, EZ, 0);
@@ -44,17 +66,33 @@ impl Gate for LookupGate {
             sha_ops::choose(ez, fz, gz),
         ];
 
-        let eq = |col, item, exp: AdviceEntry| {
-            assert_eq!(exp, table.advice[col][row + 1], "{item} mismatch at row {row}");
-        };
+        check(ROT0, "rot0", exp_rot0.into());
+        check(ROT1, "rot1", exp_rot1.into());
+        check(MAJ_X, "maj_x", exp_maj_x.into());
+        check(MAJ_Y, "maj_y", exp_maj_y.into());
+        check(MAJ_Z, "maj_z", exp_maj_z.into());
+        check(CH_X, "ch_x", exp_ch_x.into());
+        check(CH_Y, "ch_y", exp_ch_y.into());
+        check(CH_Z, "ch_z", exp_ch_z.into());
+    }
+}
 
-        eq(ROT0, "rot0", exp_rot0.into());
-        eq(ROT1, "rot1", exp_rot1.into());
-        eq(MAJ_X, "maj_x", exp_maj_x.into());
-        eq(MAJ_Y, "maj_y", exp_maj_y.into());
-        eq(MAJ_Z, "maj_z", exp_maj_z.into());
-        eq(CH_X, "ch_x", exp_ch_x.into());
-        eq(CH_Y, "ch_y", exp_ch_y.into());
-        eq(CH_Z, "ch_z", exp_ch_z.into());
+pub struct CompositionGate;
+impl Gate for CompositionGate {
+    fn check(table: &Table, row: usize) {
+        if !table.fixed_part.is_enabled(Composition, row) {
+            return;
+        }
+        let (get_limbs, check) = helpers!(table, row);
+
+        let [maj_x, maj_y, maj_z] = get_limbs(MAJ_X, MAJ_Y, MAJ_Z, 0);
+        let [ch_x, ch_y, ch_z] = get_limbs(CH_X, CH_Y, CH_Z, 0);
+        let [dx, dy, dz] = get_limbs(DX, DY, DZ, 3 * ROWS_PER_ROUND);
+        let [hx, hy, hz] = get_limbs(HX, HY, HZ, 3 * ROWS_PER_ROUND);
+
+        check(MAJ, "maj", compose(&[maj_x, maj_y, maj_z]).into());
+        check(CH, "ch", compose(&[ch_x, ch_y, ch_z]).into());
+        check(D, "d", compose(&[dx, dy, dz]).into());
+        check(H, "h", compose(&[hx, hy, hz]).into());
     }
 }

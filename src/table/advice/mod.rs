@@ -39,11 +39,11 @@ impl Advice {
         Self {
             columns: [[AdviceEntry::Mpty; NUM_ROWS]; ADVICE_COLUMNS],
         }
-        .fill_auxiliary_rows(&trace)
+        .fill_auxiliary_rows()
         .fill_round_rows(&trace)
     }
 
-    fn fill_auxiliary_rows(mut self, trace: &Trace) -> Self {
+    fn fill_auxiliary_rows(mut self) -> Self {
         [
             self[BX][2 * ROWS_PER_ROUND],
             self[BY][2 * ROWS_PER_ROUND],

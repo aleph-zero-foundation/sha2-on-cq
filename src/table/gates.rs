@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{
     lookup_tables::{LookupTable, TCh, TDec, TMaj, TMod, TRot0, TRot1, TW1, TW2},
     table::{
@@ -163,17 +165,22 @@ pub struct ResultVerificationGate;
 impl Gate for ResultVerificationGate {
     fn check(table: &Table, row: usize) {
         enable_for!(table, ResultVerification, row);
-        let (get_limbs, _, _, _) = helpers!(table, row);
+        let (get_limbs, _, get_wordsum, _) = helpers!(table, row);
 
         let [out_low, out_high] = [table.public_input[row], table.public_input[row + 1]];
 
-        // todo + instaed of wrapping_add
-        let exp_low =
-            compose(&get_limbs(AX, AY, AZ, 0)).wrapping_add(table.fixed_part.constants[row]);
-        let exp_high =
-            compose(&get_limbs(EX, EY, EZ, 0)).wrapping_add(table.fixed_part.constants[row + 1]);
+        let sum_low = compose(&get_limbs(AX, AY, AZ, 0)) as WordSum
+            + table.fixed_part.constants[row] as WordSum;
+        let sum_high = compose(&get_limbs(EX, EY, EZ, 0)) as WordSum
+            + table.fixed_part.constants[row + 1] as WordSum;
 
-        assert_eq!(exp_low, out_low, "output mismatch at row {row}");
-        assert_eq!(exp_high, out_high, "output mismatch at row {row}");
+        fn eq<T: Eq + Debug>(left: T, right: T, item: &'static str, row: usize) {
+            assert_eq!(left, right, "{item} mismatch at row {row}");
+        }
+
+        eq(sum_low, get_wordsum(LOW_SUM, 3), "low sum", row);
+        eq(sum_high, get_wordsum(HIGH_SUM, 3), "high sum", row);
+        eq(out_low, TMod::lookup(sum_low), "low out", row);
+        eq(out_high, TMod::lookup(sum_high), "high out", row);
     }
 }

@@ -50,3 +50,5 @@ pub const W: usize = 6;
 pub const A: usize = 0;
 pub const E: usize = 1;
 pub const W_SUM: usize = 7;
+pub const LOW_SUM: usize = 2;
+pub const HIGH_SUM: usize = 3;

@@ -20,7 +20,7 @@ mod render;
 
 pub const INITIAL_BUFFER: usize = 3;
 pub const ROWS_PER_ROUND: usize = 4;
-pub const NUM_ROWS: usize = (INITIAL_BUFFER + ROUNDS) * ROWS_PER_ROUND + 2;
+pub const NUM_ROWS: usize = (INITIAL_BUFFER + ROUNDS + 1) * ROWS_PER_ROUND;
 pub const ADVICE_COLUMNS: usize = 8;
 
 pub struct Table {

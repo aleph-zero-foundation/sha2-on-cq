@@ -34,7 +34,6 @@ const SHA_OUTPUT: [Word; 8] = [
 
 fn main() {
     let plonk_table = Table::new(MESSAGE_SCHEDULE, SHA_OUTPUT);
-    plonk_table.validate();
 
     let mut table = plonk_table.render();
     table.with(Style::markdown()).with(
@@ -43,4 +42,6 @@ fn main() {
             .with(LineChar::horizontal(':', Offset::End(0))),
     );
     fs::write("table.md", table.to_string().as_bytes()).unwrap();
+
+    plonk_table.validate();
 }

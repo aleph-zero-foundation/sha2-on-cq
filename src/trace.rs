@@ -103,13 +103,19 @@ impl Trace {
 #[allow(unused)]
 pub enum TraceItem {
     a,
+    a_in,
     b,
+    b_in,
     c,
+    c_in,
     d,
     d_in,
     e,
+    e_in,
     f,
+    f_in,
     g,
+    g_in,
     h,
     h_in,
     maj,
@@ -139,7 +145,13 @@ impl Index<TraceItem> for Trace {
             TraceItem::rot1 => &self.rotations[1],
             TraceItem::k => &self.k,
             TraceItem::w => &self.w,
+            TraceItem::a_in => &self.round_inputs[0],
+            TraceItem::b_in => &self.round_inputs[1],
+            TraceItem::c_in => &self.round_inputs[2],
             TraceItem::d_in => &self.round_inputs[3],
+            TraceItem::e_in => &self.round_inputs[4],
+            TraceItem::f_in => &self.round_inputs[5],
+            TraceItem::g_in => &self.round_inputs[6],
             TraceItem::h_in => &self.round_inputs[7],
         }
     }

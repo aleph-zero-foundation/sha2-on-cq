@@ -92,6 +92,8 @@ impl Advice {
             }
         }
 
+        self.fill_result_verification(trace);
+
         self
     }
 
@@ -188,5 +190,35 @@ impl Advice {
                     .into(),
             )],
         )
+    }
+
+    fn fill_result_verification(&mut self, trace: &Trace) {
+        const LAST_ROUND: usize = ROUNDS - 1;
+        const OFFSET: usize = (INITIAL_BUFFER + ROUNDS - 3) * ROWS_PER_ROUND + 3;
+
+        let mut fill = |offset, first, second, id0, id1| {
+            self.fill(
+                offset,
+                [
+                    (
+                        LOW_SUM,
+                        (trace[first][LAST_ROUND].word as WordSum
+                            + INITIAL_HASH_WORDS[id0] as WordSum)
+                            .into(),
+                    ),
+                    (
+                        HIGH_SUM,
+                        (trace[second][LAST_ROUND].word as WordSum
+                            + INITIAL_HASH_WORDS[id1] as WordSum)
+                            .into(),
+                    ),
+                ],
+            )
+        };
+
+        fill(OFFSET + 0 * ROWS_PER_ROUND, d, h, 3, 7);
+        fill(OFFSET + 1 * ROWS_PER_ROUND, c, g, 2, 6);
+        fill(OFFSET + 2 * ROWS_PER_ROUND, b, f, 1, 5);
+        fill(OFFSET + 3 * ROWS_PER_ROUND, a, e, 0, 4);
     }
 }

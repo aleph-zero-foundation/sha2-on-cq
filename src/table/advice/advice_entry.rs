@@ -15,21 +15,21 @@ impl AdviceEntry {
     pub fn limb(&self) -> Limb {
         match self {
             AdviceEntry::Limb(limb) => *limb,
-            _ => panic!("Expected limb"),
+            _ => panic!("Expected limb, found {self:?}"),
         }
     }
 
     pub fn word(&self) -> Word {
         match self {
             AdviceEntry::Word(word) => *word,
-            _ => panic!("Expected word"),
+            _ => panic!("Expected word, found {self:?}"),
         }
     }
 
     pub fn word_sum(&self) -> WordSum {
         match self {
             AdviceEntry::WSum(word_sum) => *word_sum,
-            _ => panic!("Expected word sum"),
+            _ => panic!("Expected word sum, found {self:?}"),
         }
     }
 }

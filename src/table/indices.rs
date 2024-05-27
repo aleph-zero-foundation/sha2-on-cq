@@ -24,7 +24,6 @@ pub const HX: usize = 3;
 pub const HY: usize = 4;
 pub const HZ: usize = 5;
 
-
 // ==== LOOKUP RESULTS =============================================================================
 pub const ROT0: usize = 0;
 pub const ROT1: usize = 4;
@@ -34,6 +33,8 @@ pub const MAJ_Z: usize = 3;
 pub const CH_X: usize = 5;
 pub const CH_Y: usize = 6;
 pub const CH_Z: usize = 7;
+pub const W1: usize = 6;
+pub const W2: usize = 7;
 
 // ==== COMPOSITION RESULTS ========================================================================
 
@@ -48,3 +49,4 @@ pub const W: usize = 6;
 // ==== ADDITION RESULTS ===========================================================================
 pub const A: usize = 0;
 pub const E: usize = 1;
+pub const W_SUM: usize = 7;

@@ -25,9 +25,9 @@ pub fn choose<T: Copy + BitAnd<Output = T> + BitXor<Output = T> + Not<Output = T
 }
 
 pub fn witness_op1(w: Word) -> Word {
-    right_rotation(w, 7) ^ right_rotation(w, 18) ^ right_shift(w, 3)
+    right_rotation(w, 17) ^ right_rotation(w, 19) ^ right_shift(w, 10)
 }
 
 pub fn witness_op2(w: Word) -> Word {
-    right_rotation(w, 17) ^ right_rotation(w, 19) ^ right_shift(w, 10)
+    right_rotation(w, 7) ^ right_rotation(w, 18) ^ right_shift(w, 3)
 }

@@ -5,9 +5,10 @@ use TraceItem::*;
 
 use crate::{
     constants::INITIAL_HASH_WORDS,
+    sha_ops::{witness_op1, witness_op2},
     table::{indices::*, ADVICE_COLUMNS, INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     trace::{Trace, TraceItem},
-    types::{decompose, Bitem},
+    types::{decompose, Bitem, WordSum},
     ROUNDS,
 };
 
@@ -85,7 +86,10 @@ impl Advice {
             self.fill_round_compositions(row + 2, trace_access);
             self.fill_round_additions(row + 3, trace_access);
             self.fill_round_decompositions(row + 4, trace_access);
-            self.fill_witness_computation(row, trace_access);
+            self.fill_witness(row, trace_access);
+            if round > 15 {
+                self.fill_witness_computation(row, round, trace);
+            }
         }
 
         self
@@ -127,6 +131,13 @@ impl Advice {
                 (CH_Z, trace(ch).limbs[2].into()),
             ],
         );
+        self.fill(
+            row + 1,
+            [
+                (W1, witness_op1(trace(w).word).into()),
+                (W2, witness_op2(trace(w).word).into()),
+            ],
+        );
     }
 
     fn fill_round_compositions(&mut self, row: usize, trace: impl Fn(TraceItem) -> Bitem) {
@@ -159,7 +170,23 @@ impl Advice {
         )
     }
 
-    fn fill_witness_computation(&mut self, row: usize, trace: impl Fn(TraceItem) -> Bitem) {
+    fn fill_witness(&mut self, row: usize, trace: impl Fn(TraceItem) -> Bitem) {
         self.fill(row, [(W, trace(w).word.into())])
+    }
+
+    fn fill_witness_computation(&mut self, row: usize, round: usize, trace: &Trace) {
+        let get_w = |round: usize| trace[w][round].word;
+
+        self.fill(
+            row,
+            [(
+                W_SUM,
+                (witness_op1(get_w(round - 2)) as WordSum
+                    + get_w(round - 7) as WordSum
+                    + witness_op2(get_w(round - 15)) as WordSum
+                    + get_w(round - 16) as WordSum)
+                    .into(),
+            )],
+        )
     }
 }

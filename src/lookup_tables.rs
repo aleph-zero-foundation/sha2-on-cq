@@ -3,11 +3,11 @@ use crate::{
     types::{decompose, Limb, Word, WordSum},
 };
 
-trait LookupTable {
+pub trait LookupTable {
     type Query;
     type Result;
 
-    fn lookup(&self, query: Self::Query) -> Self::Result;
+    fn lookup(query: Self::Query) -> Self::Result;
 }
 
 macro_rules! lookup_table {
@@ -17,7 +17,7 @@ macro_rules! lookup_table {
             type Query = $query;
             type Result = $result;
 
-            fn lookup(&self, query: Self::Query) -> Self::Result {
+            fn lookup(query: Self::Query) -> Self::Result {
                 $action(query)
             }
         }

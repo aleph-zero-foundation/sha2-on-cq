@@ -7,3 +7,4 @@ pub mod table;
 mod trace;
 pub mod types;
 mod sha_ops;
+mod lookup_tables;

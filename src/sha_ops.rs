@@ -1,6 +1,6 @@
 use std::ops::{BitAnd, BitXor, Not};
 
-use crate::types::{compose, right_rotation, Limb, Word};
+use crate::types::{compose, right_rotation, Limb, Word, right_shift};
 
 pub fn rot0(a_limbs: [Limb; 3]) -> Word {
     let a = compose(&a_limbs);
@@ -22,4 +22,12 @@ pub fn choose<T: Copy + BitAnd<Output = T> + BitXor<Output = T> + Not<Output = T
     z: T,
 ) -> T {
     (x & y) ^ (!x & z)
+}
+
+pub fn witness_op1(w: Word) -> Word {
+    right_rotation(w, 7) ^ right_rotation(w, 18) ^ right_shift(w, 3)
+}
+
+pub fn witness_op2(w: Word) -> Word {
+    right_rotation(w, 17) ^ right_rotation(w, 19) ^ right_shift(w, 10)
 }

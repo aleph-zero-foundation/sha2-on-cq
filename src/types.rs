@@ -37,7 +37,7 @@ mod composition {
 
     pub fn decompose_many<const N: usize, const M: usize>(words: &[Word; N]) -> [Limb; M] {
         words
-            .into_iter()
+            .iter()
             .flat_map(decompose)
             .collect::<Vec<_>>()
             .try_into()

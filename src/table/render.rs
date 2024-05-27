@@ -28,7 +28,10 @@ impl Table {
     }
 
     fn render_instance(&self, builder: &mut Builder) {
-        builder.push_column(render_column_no_zeros("result (public input)", self.public_input));
+        builder.push_column(render_column_no_zeros(
+            "result (public input)",
+            self.public_input,
+        ));
     }
 
     fn render_fixed(&self, builder: &mut Builder) {
@@ -73,7 +76,7 @@ impl Table {
 }
 
 fn render_selector(selector: &HashSet<Index>) -> impl IntoIterator<Item = impl ToString> + '_ {
-    (0..NUM_ROWS).map(|i| selector.contains(&i).then(|| "✅").unwrap_or(""))
+    (0..NUM_ROWS).map(|i| if selector.contains(&i) { "✅" } else { "" })
 }
 
 fn render_column_no_zeros(

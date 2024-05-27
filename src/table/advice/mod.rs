@@ -41,7 +41,7 @@ impl Advice {
             columns: [[AdviceEntry::Mpty; NUM_ROWS]; ADVICE_COLUMNS],
         }
         .fill_auxiliary_rows()
-        .fill_round_rows(&trace)
+        .fill_round_rows(trace)
     }
 
     fn fill_auxiliary_rows(mut self) -> Self {
@@ -192,6 +192,7 @@ impl Advice {
         )
     }
 
+    #[allow(clippy::erasing_op)]
     fn fill_result_verification(&mut self, trace: &Trace) {
         const LAST_ROUND: usize = ROUNDS - 1;
         const OFFSET: usize = (INITIAL_BUFFER + ROUNDS - 3) * ROWS_PER_ROUND + 3;

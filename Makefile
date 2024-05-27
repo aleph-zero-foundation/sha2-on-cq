@@ -6,7 +6,7 @@ run: ## Run the project
 build: ## Build the project
 	cargo build --release
 
-.PHONY: link
+.PHONY: lint
 lint: ## Run the linter
 	cargo +nightly fmt
 	cargo clippy --release -- -D warnings

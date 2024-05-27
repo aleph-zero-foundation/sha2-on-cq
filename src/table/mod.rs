@@ -38,6 +38,7 @@ impl Table {
         }
     }
 
+    #[allow(clippy::erasing_op)]
     fn spread_public_input(input: [Word; 8]) -> [Word; NUM_ROWS] {
         const OFFSET: usize = (INITIAL_BUFFER + ROUNDS - 3) * ROWS_PER_ROUND;
         let mut col = [0; NUM_ROWS];

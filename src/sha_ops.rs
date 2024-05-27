@@ -1,6 +1,6 @@
 use std::ops::{BitAnd, BitXor, Not};
 
-use crate::types::{compose, right_rotation, Limb, Word, right_shift};
+use crate::types::{compose, right_rotation, right_shift, Limb, Word};
 
 pub fn rot0(a_limbs: [Limb; 3]) -> Word {
     let a = compose(&a_limbs);

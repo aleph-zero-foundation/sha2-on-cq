@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use crate::{
     constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
-    ROUNDS,
     table::{INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     types::{Index, Word},
+    ROUNDS,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -30,6 +30,7 @@ impl FixedPart {
         }
     }
 
+    #[allow(clippy::erasing_op)]
     fn setup_constants() -> [Word; NUM_ROWS] {
         let mut col = [0; NUM_ROWS];
 

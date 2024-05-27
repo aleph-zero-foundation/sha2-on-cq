@@ -80,8 +80,8 @@ impl Gate for LookupGate {
         check(CH_X, "ch_x", TCh::lookup([ex, fx, gx]).into());
         check(CH_Y, "ch_y", TCh::lookup([ey, fy, gy]).into());
         check(CH_Z, "ch_z", TCh::lookup([ez, fz, gz]).into());
-        assert_eq!(w1, TW1::lookup(w).into(), "w1 mismatch at row {row}");
-        assert_eq!(w2, TW2::lookup(w).into(), "w1 mismatch at row {row}");
+        assert_eq!(w1, TW1::lookup(w), "w1 mismatch at row {row}");
+        assert_eq!(w2, TW2::lookup(w), "w1 mismatch at row {row}");
     }
 }
 

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-path = "src/main.rs"
-name = "sha-on-cq"
+path = "src/bin/render_table.rs"
+name = "render_table"
 
 [dependencies]
 tabled = { version = "0.15.0", features = ["ansi"] }

@@ -1,6 +1,6 @@
-.PHONY: run
-run: ## Run the project
-	cargo run --release
+.PHONY: render_table
+render_table: ## Render PLONKish table for example inputs
+	cargo run --release --bin render_table
 
 .PHONY: build
 build: ## Build the project

@@ -1,4 +1,5 @@
 use crate::{
+    sha_constants::ROUNDS,
     table::{
         advice::Advice,
         fixed::FixedPart,
@@ -9,7 +10,6 @@ use crate::{
     },
     trace::Trace,
     types::Word,
-    ROUNDS,
 };
 
 mod advice;

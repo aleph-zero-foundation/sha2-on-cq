@@ -4,12 +4,11 @@ pub use advice_entry::AdviceEntry;
 use TraceItem::*;
 
 use crate::{
-    constants::INITIAL_HASH_WORDS,
+    sha_constants::{INITIAL_HASH_WORDS, ROUNDS},
     sha_ops::{witness_op1, witness_op2},
     table::{indices::*, ADVICE_COLUMNS, INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     trace::{Trace, TraceItem},
     types::{decompose, Bitem, WordSum},
-    ROUNDS,
 };
 
 mod advice_entry;

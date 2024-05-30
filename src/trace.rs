@@ -1,10 +1,9 @@
 use std::ops::Index;
 
 use crate::{
-    constants::{INITIAL_HASH_WORDS, ROUND_CONSTANTS},
+    sha_constants::{INITIAL_HASH_WORDS, ROUNDS, ROUND_CONSTANTS},
     sha_ops,
     types::{right_rotation, right_shift, Bitem, Word, WordSum},
-    ROUNDS,
 };
 
 pub struct Trace {

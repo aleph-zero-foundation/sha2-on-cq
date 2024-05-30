@@ -11,16 +11,16 @@ pub type Index = usize;
 mod printing {
     use super::*;
 
-    pub fn print_wordsum_bits(wordsum: WordSum) {
-        println!("{wordsum:064b}");
+    pub fn format_wordsum_bits(wordsum: WordSum) -> String {
+        format!("{wordsum:064b}")
     }
 
-    pub fn print_word_bits(word: Word) {
-        println!("{word:032b}");
+    pub fn format_word_bits(word: Word) -> String {
+        format!("{word:032b}")
     }
 
-    pub fn print_limb_bits(limb: Limb) {
-        println!("{limb:016b}");
+    pub fn format_limb_bits(limb: Limb) -> String {
+        format!("{limb:016b}")
     }
 }
 
@@ -73,15 +73,6 @@ mod bitem {
         pub full: WordSum,
         pub word: Word,
         pub limbs: [Limb; 3],
-    }
-
-    impl Bitem {
-        pub fn truncate(self) -> Self {
-            Self {
-                full: self.word as WordSum,
-                ..self
-            }
-        }
     }
 
     impl From<WordSum> for Bitem {

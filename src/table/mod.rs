@@ -1,5 +1,5 @@
 use crate::{
-    sha_constants::ROUNDS,
+    sha::constants::ROUNDS,
     table::{
         advice::Advice,
         fixed::FixedPart,

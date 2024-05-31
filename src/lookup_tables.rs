@@ -1,7 +1,7 @@
 #![allow(clippy::redundant_closure_call)]
 
 use crate::{
-    sha_ops::{choose, majority, rot0, rot1, witness_op1, witness_op2},
+    sha::ops::{choose, majority, rot0, rot1, witness_op1, witness_op2},
     types::{decompose, Limb, Word, WordSum},
 };
 

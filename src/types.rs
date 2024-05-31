@@ -47,6 +47,28 @@ mod composition {
     pub const fn compose(limbs: &[Limb; 3]) -> Word {
         (limbs[0] as Word) << 21 | (limbs[1] as Word) << 10 | limbs[2] as Word
     }
+
+    pub fn bytes_to_words<const N: usize>(bytes: &[u8]) -> [Word; N] {
+        assert_eq!(
+            bytes.len() % 4,
+            0,
+            "`bytes`' length must be a multiple of 4"
+        );
+        assert_eq!(bytes.len() / 4, N, "Expected exactly N words");
+
+        bytes
+            .chunks(4)
+            .map(|chunk| {
+                let mut word = 0;
+                for (i, &byte) in chunk.iter().enumerate() {
+                    word |= (byte as Word) << (8 * (3 - i));
+                }
+                word
+            })
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap()
+    }
 }
 
 mod ops {

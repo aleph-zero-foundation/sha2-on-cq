@@ -1,8 +1,8 @@
 use std::ops::Index;
 
 use crate::{
-    sha_constants::{INITIAL_HASH_WORDS, ROUNDS, ROUND_CONSTANTS},
-    sha_ops,
+    sha,
+    sha::constants::{INITIAL_HASH_WORDS, ROUNDS, ROUND_CONSTANTS},
     types::{right_rotation, right_shift, Bitem, Word, WordSum},
 };
 
@@ -71,11 +71,11 @@ impl Trace {
             column[round] = *item;
         }
 
-        let maj = sha_ops::majority(a.word, b.word, c.word);
-        let ch = sha_ops::choose(e.word, f.word, g.word);
+        let maj = sha::ops::majority(a.word, b.word, c.word);
+        let ch = sha::ops::choose(e.word, f.word, g.word);
 
-        let rot0 = sha_ops::rot0(a.limbs);
-        let rot1 = sha_ops::rot1(e.limbs);
+        let rot0 = sha::ops::rot0(a.limbs);
+        let rot1 = sha::ops::rot1(e.limbs);
 
         let k = ROUND_CONSTANTS[round] as WordSum;
         let w = self.w[round].word as WordSum;

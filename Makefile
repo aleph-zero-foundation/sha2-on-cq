@@ -6,6 +6,10 @@ render_table: ## Render PLONKish table for example inputs
 build: ## Build the project
 	cargo build --release
 
+.PHONY: test
+test: ## Run the tests
+	cargo test
+
 .PHONY: lint
 lint: ## Run the linter
 	cargo +nightly fmt

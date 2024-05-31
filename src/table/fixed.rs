@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    sha_constants::{INITIAL_HASH_WORDS, ROUNDS, ROUND_CONSTANTS},
+    sha::constants::{INITIAL_HASH_WORDS, ROUNDS, ROUND_CONSTANTS},
     table::{INITIAL_BUFFER, NUM_ROWS, ROWS_PER_ROUND},
     types::{Index, Word},
 };
